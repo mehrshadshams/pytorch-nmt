@@ -23,7 +23,7 @@ class DataProcessor(object):
             lines = text.strip().split('\n')
             pairs = [line.split('\t') for line in lines]
 
-            return pairs[0:1000]
+            return pairs
 
     @staticmethod
     def clean_pairs(lines):

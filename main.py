@@ -4,11 +4,16 @@ import time
 from preprocess import DataProcessor
 from train import Trainer
 
-import torch
 from torchtext import data
+from torch.backends import cudnn
+from torch import cuda
 
 
 def main(args):
+    if cuda.is_available():
+        cuda.set_device(int(args.gpu_num))
+        cudnn.benchmark = True
+
     start_time = time.time()
 
     dp = DataProcessor(args.src_lang, args.trg_lang)

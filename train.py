@@ -55,6 +55,9 @@ class Trainer(object):
         self.best_bleu = .0
         self.model = self.build_model(vocabs)
 
+        if torch.cuda.is_available():
+            self.model.cuda()
+
     def train(self):
         self.best_bleu = .0
 
