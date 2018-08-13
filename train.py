@@ -12,6 +12,7 @@ from torch.optim.lr_scheduler import *
 from utils import *
 from model.Seq2Seq import Seq2Seq
 from bleu import get_bleu
+from logger import Logger
 
 
 # https://github.com/Mjkim88/Pytorch-Torchtext-Seq2Seq
@@ -44,11 +45,12 @@ class Trainer(object):
         # Training settings
         self.batch_size = args.batch_size
         self.num_epoch = args.num_epoch
+        self.iter_per_epoch = len(train_loader)
 
         # Log
         self.logger = open(self.log_path + '/log.txt', 'w')
         self.sample = open(self.sample_path + '/sample.txt', 'w')
-        # self.tf_log = Logger(self.log_path)
+        self.tf_log = Logger(self.log_path)
 
         self.best_bleu = .0
         self.model = self.build_model(vocabs)
@@ -112,15 +114,15 @@ class Trainer(object):
                     train_bleu = AverageMeter()
                     start_time = time.time()
 
-                    # Logging tensorboard
-                    # info = {
-                    #     'epoch': epoch,
-                    #     'train_iter': i,
-                    #     'train_loss': self.train_loss.avg,
-                    #     'train_bleu': self.train_bleu.avg
-                    # }
-                    # for tag, value in info.items():
-                    #     self.tf_log.scalar_summary(tag, value, (epoch * self.iter_per_epoch) + i + 1)
+                # Logging tensorboard
+                info = {
+                    'epoch': epoch,
+                    'train_iter': i,
+                    'train_loss': self.train_loss.avg,
+                    'train_bleu': self.train_bleu.avg
+                }
+                for tag, value in info.items():
+                    self.tf_log.scalar_summary(tag, value, (epoch * self.iter_per_epoch) + i + 1)
 
             self.print_train_result(epoch, i, start_time)
             self.print_sample(batch_size, epoch, i, src_input, trg_output, pred)
@@ -167,16 +169,16 @@ class Trainer(object):
             torch.save(checkpoint, self.log_path + '/Model_e%d_i%d_%.3f.pt' % (epoch, train_iter, val_bleu.avg))
 
         # Logging tensorboard
-        # info = {
-        #     'epoch': epoch,
-        #     'train_iter': train_iter,
-        #     'train_loss': self.train_loss.avg,
-        #     'train_bleu': self.train_bleu.avg,
-        #     'bleu': val_bleu.avg
-        # }
-        #
-        # for tag, value in info.items():
-        #     self.tf_log.scalar_summary(tag, value, (epoch * self.iter_per_epoch) + train_iter + 1)
+        info = {
+            'epoch': epoch,
+            'train_iter': train_iter,
+            'train_loss': self.train_loss.avg,
+            'train_bleu': self.train_bleu.avg,
+            'bleu': val_bleu.avg
+        }
+
+        for tag, value in info.items():
+            self.tf_log.scalar_summary(tag, value, (epoch * self.iter_per_epoch) + train_iter + 1)
 
     def print_train_result(self, epoch, train_iter, start_time):
         mode = "=================================        Train         ===================================="
